@@ -1,29 +1,30 @@
 const express = require('express');
 const app = express();
 const port = 8000;
-const Vigenere = require('caesar-salad').Vigenere;
+const { Vigenere } = require('caesar-salad');
 
-const password = 'password';
+app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.send('Homework 73');
+app.post('/encode', (req, res) => {
+    const { password, message } = req.body;
+    if (!password || !message) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    const encodedText = Vigenere.Cipher(password).crypt(message);
+    res.json({ encoded: encodedText });
 });
 
-app.get('/:word', (req, res) => {
-   res.send(req.params.word);
+app.post('/decode', (req, res) => {
+    const { password, message } = req.body;
+    if (!password || !message) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    const decodedText = Vigenere.Decipher(password).crypt(message);
+    res.json({ decoded: decodedText });
 });
 
-app.get('/encode/:text', (req, res) => {
-    const textEncode = req.params.text;
-    const encodedText = Vigenere.Cipher(password).crypt(textEncode);
-    res.send(encodedText);
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
-
-app.get('/decode/:text', (req, res) => {
-    const textDecode = req.params.text;
-    const decodedText = Vigenere.Decipher(password).crypt(textDecode);
-    res.send(decodedText);
-});
-
-
-app.listen(port, () => {});
