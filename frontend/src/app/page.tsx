@@ -11,7 +11,8 @@ const Home = () => {
         inputMessage: '',
     });
 
-    const [result, setResult] = useState<VigenereResponse>({});
+    const [resultEncode, setResultEncode] = useState<VigenereResponse>({});
+    const [resultDecode, setResultDecode] = useState<VigenereResponse>({});
 
     const handleInputChange = (name: keyof VigenereRequest, value: string) => {
         setFormData({
@@ -32,7 +33,7 @@ const Home = () => {
                 message: formData.inputMessage,
             });
 
-            setResult(response.data);
+            setResultEncode(response.data);
         } catch (error) {
             console.error('Error:', error);
         }
@@ -50,7 +51,7 @@ const Home = () => {
                 message: formData.inputMessage,
             });
 
-            setResult(response.data);
+            setResultDecode(response.data);
         } catch (error) {
             console.error('Error:', error);
         }
@@ -64,8 +65,8 @@ const Home = () => {
                         required
                         id="decode" label="Decode"
                         name="decode"
-                        value={formData.inputMessage}
-                        onChange={(e) => handleInputChange('inputMessage', e.target.value)}
+                        value={formData.message}
+                        onChange={(e) => handleInputChange('message', e.target.value)}
                         InputProps={{
                             onKeyDown: (e) => {
                                 if (e.key === 'Enter') {
@@ -102,8 +103,8 @@ const Home = () => {
                         required
                         id="encode" label="Encode"
                         name="encode"
-                        value={result.encoded || ''}
-                        onChange={(e) => handleInputChange('message', e.target.value)}
+                        value={formData.inputMessage}
+                        onChange={(e) => handleInputChange('inputMessage', e.target.value)}
                         InputProps={{
                             onKeyDown: (e) => {
                                 if (e.key === 'Enter') {
@@ -111,6 +112,24 @@ const Home = () => {
                                 }
                             },
                         }}
+                    />
+                </Grid>
+                <Grid item xs={6} sx={{ margin: 'auto' }}>
+                    <TextField
+                        required
+                        id="resultDecode" label="Result Decode"
+                        name="resultDecode"
+                        value={resultDecode.decoded || ''}
+                        disabled
+                    />
+                </Grid>
+                <Grid item xs={6} sx={{ margin: 'auto' }}>
+                    <TextField
+                        required
+                        id="resultEncode" label="Result Encode"
+                        name="resultEncode"
+                        value={resultEncode.encoded || ''}
+                        disabled
                     />
                 </Grid>
             </Grid>
