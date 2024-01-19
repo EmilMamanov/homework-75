@@ -1,95 +1,121 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client';
+import React, { useState } from 'react';
+import { Grid, TextField, Button } from '@mui/material';
+import { VigenereRequest, VigenereResponse } from "@/types";
+import axiosApi from "@/axiosApi";
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+const Home = () => {
+    const [formData, setFormData] = useState<VigenereRequest>({
+        password: '',
+        message: '',
+        inputMessage: '',
+    });
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+    const [result, setResult] = useState<VigenereResponse>({});
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+    const handleInputChange = (name: keyof VigenereRequest, value: string) => {
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
+    };
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+    const handleEncode = async () => {
+        if (!formData.password || !formData.inputMessage) {
+            console.error('Error: Missing required parameters');
+            return;
+        }
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+        try {
+            const response = await axiosApi.post<VigenereResponse>('/encode', {
+                password: formData.password,
+                message: formData.inputMessage,
+            });
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+            setResult(response.data);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
+    const handleDecode = async () => {
+        if (!formData.password || !formData.inputMessage) {
+            console.error('Error: Missing required parameters');
+            return;
+        }
+
+        try {
+            const response = await axiosApi.post<VigenereResponse>('/decode', {
+                password: formData.password,
+                message: formData.inputMessage,
+            });
+
+            setResult(response.data);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
+    return (
+        <form>
+            <Grid container direction="column" justifyContent="center" alignItems="center" spacing={2}>
+                <Grid item xs={6} sx={{ margin: 'auto' }}>
+                    <TextField
+                        required
+                        id="decode" label="Decode"
+                        name="decode"
+                        value={formData.inputMessage}
+                        onChange={(e) => handleInputChange('inputMessage', e.target.value)}
+                        InputProps={{
+                            onKeyDown: (e) => {
+                                if (e.key === 'Enter') {
+                                    handleDecode();
+                                }
+                            },
+                        }}
+                    />
+                </Grid>
+                <Grid container direction="row" justifyContent="center" spacing={2} sx={{ margin: 2 }}>
+                    <Grid item>
+                        <Button
+                            type="button"
+                            color="secondary"
+                            variant="contained"
+                            onClick={handleEncode}
+                        >
+                            Encode
+                        </Button>
+                    </Grid>
+                    <Grid item>
+                        <Button
+                            type="button"
+                            color="success"
+                            variant="contained"
+                            onClick={handleDecode}
+                        >
+                            Decode
+                        </Button>
+                    </Grid>
+                </Grid>
+                <Grid item xs={6} sx={{ margin: 'auto' }}>
+                    <TextField
+                        required
+                        id="encode" label="Encode"
+                        name="encode"
+                        value={result.encoded || ''}
+                        onChange={(e) => handleInputChange('message', e.target.value)}
+                        InputProps={{
+                            onKeyDown: (e) => {
+                                if (e.key === 'Enter') {
+                                    handleEncode();
+                                }
+                            },
+                        }}
+                    />
+                </Grid>
+            </Grid>
+        </form>
+    );
+};
+
+export default Home;
